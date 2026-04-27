@@ -10,8 +10,7 @@ import { GoogleGenerativeAI, Part } from "@google/generative-ai";
  */
 
 const apiKey = process.env.GEMINI_API_KEY;
-const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash-exp";
-
+const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 if (!apiKey) {
   console.warn("[llm] GEMINI_API_KEY not set — API routes will fail until configured");
 }

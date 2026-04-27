@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0E0E10;
+  --bg-elev: #161618;
+  --bg-elev-2: #1F1F22;
+  --line: #2A2A2E;
+  --line-soft: #1F1F22;
+  --text: #F5F1EA;
+  --text-dim: #9A958B;
+  --text-faint: #5C5853;
+  --accent: #E8A04A;
+  --accent-warm: #C97A35;
+  --accent-soft: rgba(232, 160, 74, 0.12);
+  --critical: #E0524C;
+  --ok: #6FAF7E;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Subtle scan-line + noise texture for "industrial monitor" feel */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+}
+
+.numeric {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Loading animation: tick-tick-tick like a precision instrument readout */
+.tick-loader {
+  display: inline-flex;
+  align-items: end;
+  gap: 3px;
+  height: 14px;
+}
+.tick-loader span {
+  width: 2px;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.3;
+  animation: tickPulse 1.2s ease-in-out infinite;
+}
+.tick-loader span:nth-child(1) { animation-delay: 0s; }
+.tick-loader span:nth-child(2) { animation-delay: 0.15s; }
+.tick-loader span:nth-child(3) { animation-delay: 0.30s; }
+.tick-loader span:nth-child(4) { animation-delay: 0.45s; }
+.tick-loader span:nth-child(5) { animation-delay: 0.60s; }
+@keyframes tickPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Staggered fade-in for suggestion chips */
+.chip-enter {
+  animation: chipEnter 0.4s ease-out backwards;
+}
+@keyframes chipEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fadeUp 0.35s ease-out;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom scrollbar — thin, industrial */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-warm);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* Suggestion chip hover: brief amber pulse */
+.chip {
+  transition: all 0.18s ease;
+  border: 1px solid var(--line);
+  background: var(--bg-elev);
+}
+.chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+.chip:active:not(:disabled) {
+  transform: translateY(0);
+}
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Drop zone styles */
+.drop-active {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+}
+
+/* Markdown content within messages */
+.msg-body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+}
+.msg-body p {
+  margin: 0 0 0.65em 0;
+}
+.msg-body p:last-child {
+  margin-bottom: 0;
+}
+.msg-body strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+.msg-body code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  background: var(--bg-elev-2);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--text);
+}
+.msg-body ul, .msg-body ol {
+  margin: 0.4em 0 0.65em 0;
+  padding-left: 1.4em;
+}
+.msg-body li {
+  margin: 0.25em 0;
+}
+.msg-body h1, .msg-body h2, .msg-body h3, .msg-body h4 {
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0.8em 0 0.4em 0;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Input focus ring */
+.input-shell:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}

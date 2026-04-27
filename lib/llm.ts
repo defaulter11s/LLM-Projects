@@ -54,16 +54,26 @@ export async function chat(
       },
     });
 
-    // Gemini uses "user" / "model" roles. Convert from our schema.
-    const history = messages.slice(0, -1).map((m) => ({
+    // Gemini requires the first history message to be from "user".
+    // Strip any leading assistant messages (e.g. our welcome greeting),
+    // and ensure the last message is the user turn we want to send.
+    const cleaned = stripLeadingAssistant(messages);
+    if (cleaned.length === 0) {
+      return { text: "", error: "No user message to send" };
+    }
+
+    const last = cleaned[cleaned.length - 1];
+    if (last.role !== "user") {
+      return { text: "", error: "Last message must be from user" };
+    }
+
+    // History = everything except the last (current) user message.
+    // Gemini also requires strictly alternating user/model turns in history,
+    // so we collapse any consecutive same-role messages defensively.
+    const history = collapseAlternating(cleaned.slice(0, -1)).map((m) => ({
       role: m.role === "assistant" ? "model" : "user",
       parts: buildParts(m),
     }));
-
-    const last = messages[messages.length - 1];
-    if (!last) {
-      return { text: "", error: "No message to send" };
-    }
 
     const chatSession = model.startChat({ history });
     const result = await chatSession.sendMessage(buildParts(last));
@@ -75,6 +85,32 @@ export async function chat(
     console.error("[llm] error:", msg);
     return { text: "", error: msg };
   }
+}
+
+/** Drop any leading assistant messages so history starts with a user turn. */
+function stripLeadingAssistant(messages: ChatMessage[]): ChatMessage[] {
+  let i = 0;
+  while (i < messages.length && messages[i].role === "assistant") {
+    i++;
+  }
+  return messages.slice(i);
+}
+
+/** Ensure strictly alternating user/assistant turns by merging consecutive ones. */
+function collapseAlternating(messages: ChatMessage[]): ChatMessage[] {
+  const out: ChatMessage[] = [];
+  for (const m of messages) {
+    const prev = out[out.length - 1];
+    if (prev && prev.role === m.role) {
+      // Merge content into previous turn
+      prev.content = `${prev.content}\n\n${m.content}`.trim();
+      // Keep the latest image if any
+      if (m.image) prev.image = m.image;
+    } else {
+      out.push({ ...m });
+    }
+  }
+  return out;
 }
 
 function buildParts(msg: ChatMessage): Part[] {
